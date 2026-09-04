@@ -1,0 +1,83 @@
+<main class="app-shell">
+  <header class="topbar">
+    <button class="brand" type="button" (click)="screen.set('game')" aria-label="Ir al juego">
+      <span class="brand-mark">10</span><span><strong>STOP</strong><small>El reto de los 10 segundos</small></span>
+    </button>
+    <nav aria-label="Navegación principal">
+      <button [class.active]="screen() === 'game'" (click)="screen.set('game')">Jugar</button>
+      <button [class.active]="screen() === 'ranking'" (click)="screen.set('ranking')">Ranking</button>
+      <button class="admin-nav" [class.active]="screen() === 'admin'" (click)="screen.set('admin')" aria-label="Administración">⚙</button>
+    </nav>
+  </header>
+
+  @if (screen() === 'game') {
+    <section class="game-screen">
+      <div class="game-copy">
+        <p class="eyebrow">¿QUÉ TAN PRECISO ERES?</p>
+        <h1>Detén el tiempo en<br /><em>10.000 segundos</em></h1>
+        <p class="instructions">Presiona el botón para comenzar. Vuelve a presionarlo justo cuando creas que han pasado 10 segundos.</p>
+      </div>
+      <div class="game-card">
+        @if (phase() === 'ready') {
+          <label class="player-field"><span>Tu nombre</span><input [ngModel]="playerName()" (ngModelChange)="playerName.set($event)" maxlength="30" placeholder="Escribe tu nombre" autocomplete="off" /></label>
+          <div class="timer">00.000</div>
+          <button class="stop-button start" type="button" (click)="startGame()"><span>INICIAR</span></button>
+          <p class="hint">También puedes usar la barra espaciadora</p>
+        } @else if (phase() === 'running') {
+          <p class="status live"><span></span> Cronómetro en marcha</p>
+          <div class="timer running">{{ formatTime(elapsedMs()) }}</div>
+          <button class="stop-button" type="button" (click)="stopGame()"><span>STOP</span></button>
+          <p class="hint">Presiona cuando sientas que llegaste a 10 segundos</p>
+        } @else if (lastResult(); as result) {
+          <p class="status" [class.winner]="result.isWinner">{{ result.isWinner ? '¡GANASTE UN PREMIO!' : (result.withinTolerance ? '¡ACERTASTE!' : 'TU RESULTADO') }}</p>
+          <div class="timer result">{{ formatTime(result.elapsedMs) }}</div>
+          <div class="difference" [class.winner]="result.isWinner">{{ formatDifference(result.differenceMs) }} del objetivo</div>
+          <p class="result-message">{{ result.isWinner ? '¡Increíble precisión! Solicita tu premio al encargado.' : (result.withinTolerance ? 'Estás dentro del margen, pero los premios de hoy ya se agotaron.' : (result.differenceMs < 0 ? 'Te adelantaste un poco. ¡Inténtalo otra vez!' : 'Te pasaste un poco. ¡Inténtalo otra vez!')) }}</p>
+          <button class="play-again" type="button" (click)="resetGame()">JUGAR DE NUEVO</button>
+        }
+      </div>
+      <div class="target-note"><span>OBJETIVO</span><strong>{{ formatTime(settings().targetMs) }} s</strong><small>Margen: ±{{ formatTime(settings().toleranceMs) }} s</small></div>
+    </section>
+  } @else if (screen() === 'ranking') {
+    <section class="ranking-screen">
+      <div class="ranking-heading"><div><p class="eyebrow">RESULTADOS LOCALES</p><h1>Los más cercanos</h1></div>
+        @if (results().length) { <button class="clear-button" (click)="clearResults()">Borrar ranking</button> }
+      </div>
+      @if (topResults().length) {
+        <div class="ranking-table">
+          <div class="ranking-row heading"><span>#</span><span>Jugador</span><span>Tiempo</span><span>Diferencia</span></div>
+          @for (result of topResults(); track result.id; let position = $index) {
+            <div class="ranking-row" [class.winner]="result.isWinner"><strong>{{ position + 1 }}</strong><span>{{ result.playerName }}</span><span>{{ formatTime(result.elapsedMs) }} s</span><span>{{ formatDifference(result.differenceMs) }}</span></div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state"><span>10</span><h2>Aún no hay resultados</h2><p>Juega la primera partida para inaugurar el ranking.</p><button (click)="screen.set('game')">IR AL JUEGO</button></div>
+      }
+    </section>
+  } @else {
+    <section class="admin-screen">
+      @if (!adminUnlocked()) {
+        <div class="admin-login">
+          <span class="lock-icon">⚙</span><p class="eyebrow">ÁREA RESTRINGIDA</p><h1>Administración</h1>
+          <p>Ingresa el PIN para modificar las reglas de la activación.</p>
+          <input type="password" inputmode="numeric" maxlength="8" [ngModel]="pinInput()" (ngModelChange)="pinInput.set($event); pinError.set(false)" (keyup.enter)="unlockAdmin()" placeholder="PIN" />
+          @if (pinError()) { <small class="error">El PIN no es correcto</small> }
+          <button (click)="unlockAdmin()">INGRESAR</button><small>PIN inicial: 1234</small>
+        </div>
+      } @else {
+        <div class="admin-heading"><div><p class="eyebrow">CONFIGURACIÓN LOCAL</p><h1>Reglas del juego</h1></div><button (click)="lockAdmin()">Cerrar sesión</button></div>
+        <div class="daily-summary">
+          <div><span>Ganadores de hoy</span><strong>{{ winnersToday() }}</strong></div>
+          <div><span>Premios restantes</span><strong>{{ prizesRemaining() }}</strong></div>
+          <div><span>Límite diario</span><strong>{{ settings().maxWinnersPerDay }}</strong></div>
+        </div>
+        <form class="settings-card" #settingsForm="ngForm" (ngSubmit)="saveSettings(tolerance.valueAsNumber, limit.valueAsNumber, pin.value)">
+          <label><span>Tolerancia (milisegundos)</span><input #tolerance type="number" min="0" max="5000" step="1" required [ngModel]="settings().toleranceMs" name="tolerance" /><small>Ejemplo: 50 equivale a ±0.050 segundos.</small></label>
+          <label><span>Máximo de ganadores por día</span><input #limit type="number" min="0" max="10000" step="1" required [ngModel]="settings().maxWinnersPerDay" name="limit" /><small>Al llegar al límite se guardan intentos, pero no se asignan más premios.</small></label>
+          <label><span>PIN administrativo</span><input #pin type="password" minlength="4" maxlength="8" required [ngModel]="settings().adminPin" name="pin" /><small>Protege la configuración sólo en este dispositivo.</small></label>
+          <button type="submit" [disabled]="settingsForm.invalid">GUARDAR CAMBIOS</button>
+        </form>
+      }
+    </section>
+  }
+</main>
