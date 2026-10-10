@@ -35,6 +35,8 @@ export class App {
   protected readonly adminUnlocked = signal(false);
   protected readonly pinInput = signal('');
   protected readonly pinError = signal(false);
+  protected readonly settingsSaved = signal(false);
+  private settingsSavedTimer: number | undefined;
 
   protected startGame(): void {
     if (this.phase() !== 'ready') return;
@@ -92,6 +94,10 @@ export class App {
       hideTimerAfterMs: hideTimerAfterSeconds * 1_000,
       randomDiscountEnabled,
     });
+    this.settingsSaved.set(true);
+    if (this.settingsSavedTimer !== undefined) window.clearTimeout(this.settingsSavedTimer);
+    this.settingsSavedTimer = window.setTimeout(() => this.settingsSaved.set(false), 3_500);
+
   }
   private drawDiscount(): 5 | 10 {
     const randomByte = new Uint8Array(1);

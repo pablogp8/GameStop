@@ -37,7 +37,7 @@
           <div class="timer result">{{ formatTime(result.elapsedMs) }}</div>
           <div class="difference" [class.winner]="result.isWinner">{{ formatDifference(result.differenceMs) }} del objetivo</div>
           @if (result.discountPercent) {
-            <div class="discount-prize"><small>PREMIO ALEATORIO</small><strong>{{ result.discountPercent }}% DE DESCUENTO</strong></div>
+            <div class="discount-prize" [class.discount-five]="result.discountPercent === 5" [class.discount-ten]="result.discountPercent === 10"><small>PREMIO ALEATORIO</small><strong>{{ result.discountPercent }}% DE DESCUENTO</strong></div>
           }
           <p class="result-message">{{ result.isWinner ? (result.discountPercent ? 'Presenta esta pantalla al encargado para aplicar tu descuento.' : '¡Increíble precisión! Solicita tu premio al encargado.') : (result.withinTolerance ? 'Estás dentro del margen, pero los premios de hoy ya se agotaron.' : (result.differenceMs < 0 ? 'Te adelantaste un poco. ¡Inténtalo otra vez!' : 'Te pasaste un poco. ¡Inténtalo otra vez!')) }}</p>
           <button class="play-again" type="button" (click)="resetGame()">JUGAR DE NUEVO</button>
@@ -90,6 +90,9 @@
             <label class="switch-row"><span><strong>Descuento aleatorio</strong><small>Al ganar, entrega aleatoriamente un descuento de 5% o 10%, con la misma probabilidad.</small></span><input #randomDiscount type="checkbox" [ngModel]="settings().randomDiscountEnabled" name="randomDiscountEnabled" /></label>
           </div>
           <button type="submit" [disabled]="settingsForm.invalid">GUARDAR CAMBIOS</button>
+          @if (settingsSaved()) {
+            <div class="settings-saved" role="status" aria-live="polite"><span>✓</span><strong>Configuración guardada correctamente</strong></div>
+          }
         </form>
       }
     </section>
