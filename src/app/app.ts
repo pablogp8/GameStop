@@ -51,10 +51,12 @@ export class App {
     const withinTolerance = Math.abs(differenceMs) <= rules.toleranceMs;
     const hasPrizeSlot = this.resultsService.winnersOn() < rules.maxWinnersPerDay;
     const isWinner = withinTolerance && hasPrizeSlot;
+    const discountPercent = isWinner && rules.randomDiscountEnabled ? this.drawDiscount() : undefined;
     const result: GameResult = {
       id: createId(), playerName: this.playerName().trim() || 'Anónimo', elapsedMs,
       differenceMs, isWinner, withinTolerance,
       prizeStatus: isWinner ? 'winner' : withinTolerance ? 'daily-limit-reached' : 'outside-tolerance',
+      discountPercent,
       targetMs: rules.targetMs, toleranceMs: rules.toleranceMs,
       deviceId: this.resultsService.deviceId, playedAt: new Date().toISOString(), syncStatus: 'local',
     };
@@ -80,6 +82,7 @@ export class App {
     adminPin: string,
     hideTimerEnabled: boolean,
     hideTimerAfterSeconds: number,
+    randomDiscountEnabled: boolean,
   ): void {
     this.gameSettings.update({
       toleranceMs,
@@ -87,8 +90,16 @@ export class App {
       adminPin,
       hideTimerEnabled,
       hideTimerAfterMs: hideTimerAfterSeconds * 1_000,
+      randomDiscountEnabled,
     });
   }
+  private drawDiscount(): 5 | 10 {
+    const randomByte = new Uint8Array(1);
+    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(randomByte);
+    else randomByte[0] = Math.floor(Math.random() * 256);
+    return randomByte[0] % 2 === 0 ? 5 : 10;
+  }
+
   protected lockAdmin(): void { this.adminUnlocked.set(false); this.screen.set('game'); }
 
   @HostListener('window:keydown.space', ['$event'])

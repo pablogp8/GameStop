@@ -6,6 +6,7 @@ export interface GameSettings {
   maxWinnersPerDay: number;
   hideTimerEnabled: boolean;
   hideTimerAfterMs: number;
+  randomDiscountEnabled: boolean;
   adminPin: string;
 }
 
@@ -15,6 +16,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   maxWinnersPerDay: 10,
   hideTimerEnabled: false,
   hideTimerAfterMs: 5_000,
+  randomDiscountEnabled: false,
   adminPin: '1234',
 };
 
@@ -30,6 +32,7 @@ export class GameSettingsService {
       toleranceMs: Math.max(0, Math.round(changes.toleranceMs ?? current.toleranceMs)),
       hideTimerEnabled: changes.hideTimerEnabled ?? current.hideTimerEnabled,
       hideTimerAfterMs: Math.max(0, Math.round(changes.hideTimerAfterMs ?? current.hideTimerAfterMs)),
+      randomDiscountEnabled: changes.randomDiscountEnabled ?? current.randomDiscountEnabled,
       maxWinnersPerDay: Math.max(0, Math.round(changes.maxWinnersPerDay ?? current.maxWinnersPerDay)),
       adminPin: (changes.adminPin ?? current.adminPin).trim() || current.adminPin,
     };
