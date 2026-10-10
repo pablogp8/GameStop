@@ -25,7 +25,11 @@
           <p class="hint">También puedes usar la barra espaciadora</p>
         } @else if (phase() === 'running') {
           <p class="status live"><span></span> Cronómetro en marcha</p>
-          <div class="timer running">{{ formatTime(elapsedMs()) }}</div>
+          @if (timerHidden()) {
+            <div class="timer timer-hidden" aria-live="polite"><span>•••</span><small>El tiempo está oculto</small></div>
+          } @else {
+            <div class="timer running">{{ formatTime(elapsedMs()) }}</div>
+          }
           <button class="stop-button" type="button" (click)="stopGame()"><span>STOP</span></button>
           <p class="hint">Presiona cuando sientas que llegaste a 10 segundos</p>
         } @else if (lastResult(); as result) {
@@ -71,9 +75,13 @@
           <div><span>Premios restantes</span><strong>{{ prizesRemaining() }}</strong></div>
           <div><span>Límite diario</span><strong>{{ settings().maxWinnersPerDay }}</strong></div>
         </div>
-        <form class="settings-card" #settingsForm="ngForm" (ngSubmit)="saveSettings(tolerance.valueAsNumber, limit.valueAsNumber, pin.value)">
+        <form class="settings-card" #settingsForm="ngForm" (ngSubmit)="saveSettings(tolerance.valueAsNumber, limit.valueAsNumber, pin.value, hideTimer.checked, hideAfter.valueAsNumber)">
           <label><span>Tolerancia (milisegundos)</span><input #tolerance type="number" min="0" max="5000" step="1" required [ngModel]="settings().toleranceMs" name="tolerance" /><small>Ejemplo: 50 equivale a ±0.050 segundos.</small></label>
           <label><span>Máximo de ganadores por día</span><input #limit type="number" min="0" max="10000" step="1" required [ngModel]="settings().maxWinnersPerDay" name="limit" /><small>Al llegar al límite se guardan intentos, pero no se asignan más premios.</small></label>
+          <div class="difficulty-settings">
+            <label class="switch-row"><span><strong>Ocultar cronómetro</strong><small>Agrega dificultad ocultando el tiempo durante la partida.</small></span><input #hideTimer type="checkbox" [ngModel]="settings().hideTimerEnabled" name="hideTimerEnabled" /></label>
+            <label><span>Ocultar después de (segundos)</span><input #hideAfter type="number" min="0" [max]="settings().targetMs / 1000" step="0.1" required [ngModel]="settings().hideTimerAfterMs / 1000" name="hideTimerAfterSeconds" /><small>El tiempo volverá a mostrarse al presionar STOP.</small></label>
+          </div>
           <label><span>PIN administrativo</span><input #pin type="password" minlength="4" maxlength="8" required [ngModel]="settings().adminPin" name="pin" /><small>Protege la configuración sólo en este dispositivo.</small></label>
           <button type="submit" [disabled]="settingsForm.invalid">GUARDAR CAMBIOS</button>
         </form>

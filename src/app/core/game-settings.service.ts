@@ -4,6 +4,8 @@ export interface GameSettings {
   targetMs: number;
   toleranceMs: number;
   maxWinnersPerDay: number;
+  hideTimerEnabled: boolean;
+  hideTimerAfterMs: number;
   adminPin: string;
 }
 
@@ -11,6 +13,8 @@ const DEFAULT_SETTINGS: GameSettings = {
   targetMs: 10_000,
   toleranceMs: 50,
   maxWinnersPerDay: 10,
+  hideTimerEnabled: false,
+  hideTimerAfterMs: 5_000,
   adminPin: '1234',
 };
 
@@ -24,6 +28,8 @@ export class GameSettingsService {
     const updated: GameSettings = {
       targetMs: Math.max(100, Math.round(changes.targetMs ?? current.targetMs)),
       toleranceMs: Math.max(0, Math.round(changes.toleranceMs ?? current.toleranceMs)),
+      hideTimerEnabled: changes.hideTimerEnabled ?? current.hideTimerEnabled,
+      hideTimerAfterMs: Math.max(0, Math.round(changes.hideTimerAfterMs ?? current.hideTimerAfterMs)),
       maxWinnersPerDay: Math.max(0, Math.round(changes.maxWinnersPerDay ?? current.maxWinnersPerDay)),
       adminPin: (changes.adminPin ?? current.adminPin).trim() || current.adminPin,
     };

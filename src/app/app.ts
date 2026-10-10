@@ -26,6 +26,12 @@ export class App {
   protected readonly topResults = computed(() => this.results().slice(0, 10));
   protected readonly winnersToday = computed(() => this.resultsService.winnersOn());
   protected readonly prizesRemaining = computed(() => Math.max(0, this.settings().maxWinnersPerDay - this.winnersToday()));
+  protected readonly timerHidden = computed(() =>
+    this.phase() === 'running' &&
+    this.settings().hideTimerEnabled &&
+    this.elapsedMs() >= this.settings().hideTimerAfterMs,
+  );
+
   protected readonly adminUnlocked = signal(false);
   protected readonly pinInput = signal('');
   protected readonly pinError = signal(false);
@@ -68,8 +74,20 @@ export class App {
     this.adminUnlocked.set(valid); this.pinError.set(!valid);
     if (valid) this.pinInput.set('');
   }
-  protected saveSettings(toleranceMs: number, maxWinnersPerDay: number, adminPin: string): void {
-    this.gameSettings.update({ toleranceMs, maxWinnersPerDay, adminPin });
+  protected saveSettings(
+    toleranceMs: number,
+    maxWinnersPerDay: number,
+    adminPin: string,
+    hideTimerEnabled: boolean,
+    hideTimerAfterSeconds: number,
+  ): void {
+    this.gameSettings.update({
+      toleranceMs,
+      maxWinnersPerDay,
+      adminPin,
+      hideTimerEnabled,
+      hideTimerAfterMs: hideTimerAfterSeconds * 1_000,
+    });
   }
   protected lockAdmin(): void { this.adminUnlocked.set(false); this.screen.set('game'); }
 
