@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class AudioFeedbackService {
+  private readonly volumeMultiplier = 1.5;
   private context?: AudioContext;
   private clockTimer?: number;
   private clockGeneration = 0;
@@ -54,7 +55,6 @@ export class AudioFeedbackService {
   private playTick(): void {
     this.tickCount++;
     this.playTone(this.tickCount % 2 === 0 ? 820 : 1_050, 0, 0.045, 0.045, 'square');
-    navigator.vibrate?.(8);
   }
 
   private playVictoryFanfare(): void {
@@ -85,7 +85,8 @@ export class AudioFeedbackService {
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, startsAt);
     gain.gain.setValueAtTime(0.0001, startsAt);
-    gain.gain.exponentialRampToValueAtTime(volume, startsAt + 0.008);
+    const adjustedVolume = Math.min(1, volume * this.volumeMultiplier);
+    gain.gain.exponentialRampToValueAtTime(adjustedVolume, startsAt + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, startsAt + duration);
     oscillator.connect(gain).connect(this.context.destination);
     oscillator.start(startsAt);
