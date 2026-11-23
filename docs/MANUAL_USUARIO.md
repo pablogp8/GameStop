@@ -6,6 +6,8 @@ STOP es un juego para activaciones comerciales. El participante inicia un cronó
 
 La aplicación puede utilizarse en un navegador o como aplicación Android. Actualmente cada dispositivo trabaja de forma local e independiente.
 
+Cada instalación tiene un **nombre de tablet** configurable y un ID técnico automático. Use nombres claros como `Tablet Entrada`, `Tablet Caja 1` o `Sucursal Centro` para distinguir los archivos y resultados de cada equipo.
+
 ## 2. Acceso y navegación
 
 La barra superior contiene tres opciones:
@@ -79,6 +81,10 @@ La opción **Borrar ranking** elimina todos los resultados del dispositivo despu
 
 ### Opciones disponibles
 
+#### Nombre de esta tablet
+
+Identifica el equipo dentro de sus registros. El ID técnico se genera automáticamente y se mantiene mientras no se borren los datos de la aplicación. Dos tablets pueden tener el mismo modelo, pero no deberían compartir el mismo nombre operativo.
+
 #### Tolerancia (milisegundos)
 
 Define cuánto puede separarse el resultado de 10.000 segundos y todavía considerarse válido. Un valor menor aumenta la dificultad.
@@ -117,9 +123,15 @@ Permite sustituir el PIN de acceso. Debe contener entre 4 y 8 caracteres. Guarde
 
 Activa la asignación aleatoria de descuentos del 5 % o 10 % únicamente para intentos ganadores.
 
-## 8. Registro de actividad
+## 8. Registro diario de actividad
 
-La aplicación registra:
+La aplicación crea un registro independiente por fecha y tablet. El nombre sigue este formato:
+
+```text
+stop-ten-2026-11-23-tablet-entrada.txt
+```
+
+Cada registro incluye:
 
 - Cada partida: fecha y hora, jugador, tiempo, diferencia, resultado, descuento y dispositivo.
 - Cada configuración guardada: reglas y opciones activadas.
@@ -129,23 +141,30 @@ El PIN administrativo nunca se escribe en el log.
 Para abrirlo:
 
 1. Ingrese a **Administración**.
-2. Presione **ABRIR LOG .TXT**.
-3. En Android, elija una aplicación para abrir o compartir `game-stop-log.txt`.
-4. En un navegador, se abrirá o descargará un archivo de texto según la configuración del navegador.
+2. Seleccione la fecha que desea consultar.
+3. Presione **ABRIR LOG .TXT**.
+4. En Android, elija una aplicación para abrir o compartir el archivo diario.
+5. En un navegador, se descargará el TXT correspondiente.
 
-El registro conserva como máximo 20,000 eventos por dispositivo.
+En Android también se conserva una copia privada dentro de los datos de la aplicación. Cada día admite hasta 5,000 eventos por dispositivo.
 
-## 9. Recomendaciones para una activación
+## 9. Versión de demostración
+
+La variante demo funciona durante cinco días desde su primera apertura. La pantalla superior indica los días restantes. Cuando vence, el juego queda bloqueado, pero Administración, Ranking y los registros diarios permanecen disponibles para consulta y exportación.
+
+Si el reloj del dispositivo se retrocede de forma considerable, la demo puede finalizar como medida de protección. Borrar los datos o reinstalar puede reiniciar una demo local; esta limitación no sustituye una licencia validada por servidor.
+
+## 10. Recomendaciones para una activación
 
 - Cambie el PIN inicial `1234` antes de entregar el dispositivo al público.
 - Configure y pruebe la tolerancia y el límite diario antes de iniciar.
 - Mantenga cargada la tablet y desactive temporalmente las notificaciones externas.
 - Realice una partida de prueba para comprobar audio, vibración y volumen.
-- Abra o comparta el log al finalizar la jornada para conservar un respaldo.
+- Abra o comparta el log diario al finalizar la jornada para conservar un respaldo.
 - No borre los datos del navegador ni desinstale la aplicación antes de exportar la información necesaria.
 - Si usa varias tablets, recuerde que cada una lleva por separado su ranking, límite diario, configuración y log.
 
-## 10. Solución de problemas
+## 11. Solución de problemas
 
 ### No se escucha sonido
 

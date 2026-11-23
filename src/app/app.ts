@@ -12,6 +12,7 @@ import { createId } from './core/id.util';
 import { GameSettingsService } from './core/game-settings.service';
 import { AudioFeedbackService } from './core/audio-feedback.service';
 import { AuditLogService } from './core/audit-log.service';
+import { DemoLicenseService } from './core/demo-license.service';
 
 @Component({
   imports: [FormsModule],
@@ -24,6 +25,7 @@ export class App {
   private readonly resultsService = inject(ResultsService);
   private readonly audioFeedback = inject(AudioFeedbackService);
   private readonly auditLog = inject(AuditLogService);
+  protected readonly demoLicense = inject(DemoLicenseService);
   protected readonly gameSettings = inject(GameSettingsService);
   protected readonly settings = this.gameSettings.settings;
   protected readonly playerName = signal('');
@@ -35,6 +37,9 @@ export class App {
   protected readonly topResults = computed(() => this.results().slice(0, 10));
   protected readonly winnersToday = computed(() => this.resultsService.winnersOn());
   protected readonly prizesRemaining = computed(() => Math.max(0, this.settings().maxWinnersPerDay - this.winnersToday()));
+  protected readonly deviceCode = computed(() => `TBL-${this.resultsService.deviceId.slice(-8).toUpperCase()}`);
+  protected readonly logDates = signal<string[]>(this.auditLog.availableDates());
+  protected readonly selectedLogDate = signal(this.auditLog.today());
   protected readonly confettiPieces = Array.from({ length: 150 }, (_, index) => {
     const angle = (index / 150) * Math.PI * 2 + ((index % 7) - 3) * 0.028;
     const distance = 130 + ((index * 47) % 230);
@@ -60,11 +65,21 @@ export class App {
   private settingsSavedTimer: number | undefined;
 
   constructor() {
+    const demoEvent = this.demoLicense.event();
+    if (demoEvent) {
+      this.auditLog.recordSystem(
+        demoEvent,
+        `vencimiento=${this.demoLicense.expiresAt() ? new Date(this.demoLicense.expiresAt()!).toISOString() : 'no_aplica'}`,
+        this.settings().deviceName,
+        this.resultsService.deviceId,
+      );
+      this.refreshLogDates();
+    }
     if (Capacitor.isNativePlatform()) void this.initializeNativeApp();
   }
 
   protected startGame(): void {
-    if (this.phase() !== 'ready') return;
+    if (this.phase() !== 'ready' || this.demoLicense.expired()) return;
     this.lastResult.set(null);
     this.phase.set('running');
     this.timer.start();
@@ -89,12 +104,14 @@ export class App {
       prizeStatus: isWinner ? 'winner' : withinTolerance ? 'daily-limit-reached' : 'outside-tolerance',
       discountPercent,
       targetMs: rules.targetMs, toleranceMs: rules.toleranceMs,
-      deviceId: this.resultsService.deviceId, playedAt: new Date().toISOString(), syncStatus: 'local',
+      deviceId: this.resultsService.deviceId, deviceName: rules.deviceName,
+      playedAt: new Date().toISOString(), syncStatus: 'local',
     };
     this.lastResult.set(result);
     this.phase.set('result');
     await this.resultsService.add(result);
     this.auditLog.recordGame(result);
+    this.refreshLogDates();
     this.audioFeedback.playResult(isWinner, rules.soundEnabled);
     void this.nativeResultFeedback(isWinner);
     this.webVibrate(isWinner ? [80, 45, 120, 55, 220] : [130, 70, 130]);
@@ -114,6 +131,7 @@ export class App {
   protected saveSettings(
     toleranceMs: number,
     maxWinnersPerDay: number,
+    deviceName: string,
     adminPin: string,
     hideTimerEnabled: boolean,
     hideTimerAfterSeconds: number,
@@ -124,6 +142,7 @@ export class App {
     this.gameSettings.update({
       toleranceMs,
       maxWinnersPerDay,
+      deviceName,
       adminPin,
       hideTimerEnabled,
       hideTimerAfterMs: hideTimerAfterSeconds * 1_000,
@@ -131,7 +150,8 @@ export class App {
       soundEnabled,
       randomDiscountEnabled,
     });
-    this.auditLog.recordSettings(this.settings());
+    this.auditLog.recordSettings(this.settings(), this.resultsService.deviceId);
+    this.refreshLogDates();
     this.audioFeedback.playSaveConfirmation(soundEnabled);
     if (soundEnabled) {
       void this.nativeImpact(ImpactStyle.Medium);
@@ -151,12 +171,22 @@ export class App {
 
   protected async openAuditLog(): Promise<void> {
     try {
-      await this.auditLog.openTextFile();
-      this.logMessage.set('Registro abierto correctamente.');
+      await this.auditLog.openTextFile(
+        this.selectedLogDate(),
+        this.settings().deviceName,
+        this.resultsService.deviceId,
+      );
+      this.logMessage.set(`Registro del ${this.selectedLogDate()} abierto correctamente.`);
     } catch {
       this.logMessage.set('No fue posible abrir el registro.');
     }
     window.setTimeout(() => this.logMessage.set(''), 3_500);
+  }
+
+  private refreshLogDates(): void {
+    const dates = this.auditLog.availableDates();
+    this.logDates.set(dates);
+    if (!dates.includes(this.selectedLogDate())) this.selectedLogDate.set(dates[0] ?? this.auditLog.today());
   }
 
   private async initializeNativeApp(): Promise<void> {

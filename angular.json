@@ -63,8 +63,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "19kB",
-                  "maximumError": "23kB"
+                  "maximumWarning": "21kB",
+                  "maximumError": "25kB"
                 }
               ],
               "outputHashing": "all"
@@ -73,6 +73,27 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "demo": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "21kB",
+                  "maximumError": "25kB"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/demo-config.ts",
+                  "with": "src/environments/demo-config.demo.ts"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
@@ -85,6 +106,9 @@
             },
             "development": {
               "buildTarget": "boton-stop:build:development"
+            },
+            "demo": {
+              "buildTarget": "boton-stop:build:demo"
             }
           },
           "defaultConfiguration": "development"

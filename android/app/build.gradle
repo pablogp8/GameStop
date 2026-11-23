@@ -16,6 +16,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    flavorDimensions += "distribution"
+    productFlavors {
+        full {
+            dimension "distribution"
+            resValue "string", "app_name", "STOP TEN"
+            resValue "string", "title_activity_main", "STOP TEN"
+        }
+        demo {
+            dimension "distribution"
+            applicationIdSuffix ".demo"
+            versionNameSuffix "-demo"
+            resValue "string", "app_name", "STOP TEN Demo"
+            resValue "string", "title_activity_main", "STOP TEN Demo"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false

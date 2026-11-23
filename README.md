@@ -3,6 +3,7 @@
 ## Documentación
 
 - [Manual de usuario](docs/MANUAL_USUARIO.md)
+- [Manual de usuario en Word](docs/Manual_de_usuario_STOP_TEN.docx)
 - [Manual técnico](docs/MANUAL_TECNICO.md)
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.7.
@@ -85,6 +86,14 @@ Generar un APK de depuración:
 npm run android:apk
 ```
 
-El APK se genera en `android/app/build/outputs/apk/debug/app-debug.apk`.
+El APK completo se genera en `android/app/build/outputs/apk/full/debug/app-full-debug.apk`.
+
+Generar la variante demo con cinco días desde la primera apertura:
+
+```bash
+npm run android:apk:demo
+```
+
+El APK demo se genera en `android/app/build/outputs/apk/demo/debug/app-demo-debug.apk` y puede instalarse junto a la versión completa.
 
 La app Android bloquea la orientación vertical, mantiene la pantalla encendida, oculta las barras del sistema y ofrece retroalimentación háptica al iniciar, detener y ganar.

@@ -9,6 +9,7 @@ export interface GameSettings {
   hideResultDetailsEnabled: boolean;
   soundEnabled: boolean;
   randomDiscountEnabled: boolean;
+  deviceName: string;
   adminPin: string;
 }
 
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   hideResultDetailsEnabled: false,
   soundEnabled: true,
   randomDiscountEnabled: false,
+  deviceName: 'Tablet 01',
   adminPin: '1234',
 };
 
@@ -39,6 +41,7 @@ export class GameSettingsService {
       hideResultDetailsEnabled: changes.hideResultDetailsEnabled ?? current.hideResultDetailsEnabled,
       soundEnabled: changes.soundEnabled ?? current.soundEnabled,
       randomDiscountEnabled: changes.randomDiscountEnabled ?? current.randomDiscountEnabled,
+      deviceName: (changes.deviceName ?? current.deviceName).trim().slice(0, 40) || current.deviceName,
       maxWinnersPerDay: Math.max(0, Math.round(changes.maxWinnersPerDay ?? current.maxWinnersPerDay)),
       adminPin: (changes.adminPin ?? current.adminPin).trim() || current.adminPin,
     };

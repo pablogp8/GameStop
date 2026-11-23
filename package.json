@@ -5,12 +5,15 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build",
+    "build:demo": "ng build --configuration demo",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "android:sync": "npm run build && cap sync android",
+    "android:sync:demo": "npm run build:demo && cap sync android",
     "android:open": "cap open android",
     "android:run": "npm run android:sync && cap run android",
-    "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug"
+    "android:apk": "npm run android:sync && cd android && gradlew.bat assembleFullDebug",
+    "android:apk:demo": "npm run android:sync:demo && cd android && gradlew.bat assembleDemoDebug"
   },
   "private": true,
   "packageManager": "npm@10.9.8",

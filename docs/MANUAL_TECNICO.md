@@ -12,6 +12,7 @@ Datos importantes de la aplicación:
 - PIN administrativo inicial: **`1234`**
 - Persistencia actual: `localStorage` del navegador o WebView
 - Orientación Android: vertical
+- Variantes Android: `fullDebug` sin caducidad y `demoDebug` con cinco días desde la primera apertura
 
 El punto de entrada `src/main.ts` contiene el encabezado de identificación del desarrollo, con el nombre STOP TEN, descripción, autor, titular del copyright y versión 1.0.0. Este encabezado debe actualizarse al publicar una nueva versión mayor o menor del producto.
 
@@ -48,6 +49,8 @@ src/
       local-results.repository.ts  Implementación con localStorage
       audio-feedback.service.ts    Sonidos y tic-tac
       audit-log.service.ts         Registro y exportación TXT
+      demo-license.service.ts      Vigencia y protección básica de la demo
+  environments/                    Configuración full y demo mediante file replacement
 public/assets/images/              Recursos gráficos y logotipo
 android/                           Proyecto Android nativo generado por Capacitor
 capacitor.config.ts                Configuración de Capacitor
@@ -93,7 +96,9 @@ Claves utilizadas en `localStorage`:
 | `boton-stop.settings.v1` | Reglas, opciones y PIN administrativo |
 | `boton-stop.results.v1` | Historial completo de resultados locales |
 | `boton-stop.device-id` | Identificador generado para la instalación |
-| `boton-stop.audit-log.v1` | Hasta 20,000 entradas de auditoría |
+| `boton-stop.audit-log.v2.YYYY-MM-DD` | Hasta 5,000 eventos del día indicado |
+| `stop-ten.demo.activation.v1` | Primera apertura de la variante demo |
+| `stop-ten.demo.last-seen.v1` | Última hora observada para detectar retrocesos |
 
 Los datos no se cifran y permanecen asociados al origen web o a la WebView instalada. Limpiar los datos de la aplicación, borrar el almacenamiento del sitio o desinstalar la app puede eliminarlos.
 
@@ -115,9 +120,9 @@ El objetivo existe en el modelo y permanece en 10 segundos; actualmente no se ex
 
 ## 6. Registro de auditoría
 
-`AuditLogService` registra partidas y guardados de configuración en formato de texto lógico dentro de `localStorage`. El PIN se excluye deliberadamente.
+`AuditLogService` separa partidas y guardados de configuración por día local. Cada entrada incluye el nombre operativo de la tablet y su ID técnico; el PIN se excluye deliberadamente. El registro anterior `boton-stop.audit-log.v1` se migra automáticamente al esquema diario.
 
-En Android, el servicio crea temporalmente `game-stop-log.txt` en el directorio caché y abre el selector nativo mediante Share. En web crea un `Blob` UTF-8 y abre su URL temporal.
+En Android, cada actualización sobrescribe la representación completa del TXT diario dentro de `Directory.Data/logs` y, al compartir, crea una copia temporal en caché. En web genera un `Blob` UTF-8 descargable. El formato de nombre es `stop-ten-YYYY-MM-DD-nombre-tablet.txt`.
 
 Las fechas internas de cada evento se guardan en ISO 8601/UTC. El encabezado de exportación usa la fecha y hora local del dispositivo.
 
@@ -199,7 +204,7 @@ npm run android:open
 
 Desde Android Studio puede seleccionar un dispositivo físico con depuración USB o un emulador y ejecutar la aplicación.
 
-### Generar APK de depuración
+### Generar APK completo de depuración
 
 ```powershell
 npm run android:apk
@@ -208,8 +213,22 @@ npm run android:apk
 El archivo resultante queda en:
 
 ```text
-android/app/build/outputs/apk/debug/app-debug.apk
+android/app/build/outputs/apk/full/debug/app-full-debug.apk
 ```
+
+### Generar APK demo de cinco días
+
+```powershell
+npm run android:apk:demo
+```
+
+El archivo resultante queda en:
+
+```text
+android/app/build/outputs/apk/demo/debug/app-demo-debug.apk
+```
+
+La demo usa `applicationIdSuffix ".demo"`, por lo que puede instalarse junto a la versión completa. Su vigencia comienza en la primera apertura, registra el último reloj observado y bloquea el juego al vencer o detectar un retroceso superior a cinco minutos. Ranking, Administración y exportación continúan accesibles.
 
 Este APK es apropiado para pruebas internas. Para distribución formal debe configurarse una clave de firma y generar una versión `release` o un Android App Bundle (`.aab`). La clave privada de firma nunca debe subirse al repositorio.
 
@@ -221,6 +240,7 @@ Este APK es apropiado para pruebas internas. Para distribución formal debe conf
 - Splash screen propio.
 - Respuesta háptica nativa.
 - Exportación del log mediante el selector de compartir de Android.
+- Icono adaptativo mandarina con cronómetro negro y el número 10, además de variante monocromática para iconos temáticos.
 
 ## 9. Marca y recursos visuales
 
