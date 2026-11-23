@@ -57,3 +57,29 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Android
+
+La aplicación usa Capacitor 8 y requiere OpenJDK 21, Android SDK Platform 36 y Build Tools 35.
+
+Sincronizar Angular con el proyecto nativo:
+
+```bash
+npm run android:sync
+```
+
+Abrir el proyecto en Android Studio:
+
+```bash
+npm run android:open
+```
+
+Generar un APK de depuración:
+
+```bash
+npm run android:apk
+```
+
+El APK se genera en `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+La app Android bloquea la orientación vertical, mantiene la pantalla encendida, oculta las barras del sistema y ofrece retroalimentación háptica al iniciar, detener y ganar.

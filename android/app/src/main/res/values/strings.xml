@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">STOP - Reto 10 segundos</string>
+    <string name="title_activity_main">STOP - Reto 10 segundos</string>
+    <string name="package_name">com.pablogp8.gamestop</string>
+    <string name="custom_url_scheme">com.pablogp8.gamestop</string>
+</resources>
